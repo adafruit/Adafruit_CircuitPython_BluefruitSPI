@@ -151,8 +151,12 @@ class BluefruitSPI:
         self._spi.unlock()
 
     def cmd(self, cmd):
-        """Executes the supplied AT command, which must be terminated with
+        """
+        Executes the supplied AT command, which must be terminated with
         a new-line (\n) character.
+        Returns msgtype, rspid, rsp, which are 8-bit int, 16-bit int and a
+        bytearray.
+        :param cmd: The new-line (\n) terminated AT command to execute.
         """
         # Make sure we stay within the 20 byte limit
         if len(cmd) > 16:
