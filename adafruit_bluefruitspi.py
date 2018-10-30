@@ -57,7 +57,7 @@ except ImportError:
     from ustruct import pack_into, unpack
 
 
-class MsgType:  #pylint: disable=too-few-public-methods
+class MsgType:  #pylint: disable=too-few-public-methods,bad-whitespace
     """An enum-like class representing the possible message types.
     Possible values are:
     - ``MsgType.COMMAND``
@@ -71,7 +71,7 @@ class MsgType:  #pylint: disable=too-few-public-methods
     ERROR     = const(0x80)  # Error message
 
 
-class SDEPCommand:  #pylint: disable=too-few-public-methods
+class SDEPCommand:  #pylint: disable=too-few-public-methods,bad-whitespace
     """An enum-like class representing the possible SDEP commands.
     Possible values are:
     - ``SDEPCommand.INITIALIZE``
@@ -85,7 +85,7 @@ class SDEPCommand:  #pylint: disable=too-few-public-methods
     BLEUART_RX = const(0x0A02) # BLE UART read data
 
 
-class ArgType:  #pylint: disable=too-few-public-methods
+class ArgType:  #pylint: disable=too-few-public-methods,bad-whitespace
     """An enum-like class representing the possible argument types.
     Possible values are
     - ``ArgType.STRING``
@@ -107,7 +107,7 @@ class ArgType:  #pylint: disable=too-few-public-methods
     UINT8     = const(0x0800) # Unsigned 8-bit integer data type
 
 
-class ErrorCode:  #pylint: disable=too-few-public-methods
+class ErrorCode:  #pylint: disable=too-few-public-methods,bad-whitespace
     """An enum-like class representing possible error codes.
     Possible values are
     - ``ErrorCode.``
@@ -151,6 +151,9 @@ class BluefruitSPI:
         self._spi.unlock()
 
     def cmd(self, cmd):
+        """Executes the supplied AT command, which must be terminated with
+        a new-line (\n) character.
+        """
         # Make sure we stay within the 20 byte limit
         if len(cmd) > 16:
             # TODO: Split command into multiple packets
@@ -180,7 +183,7 @@ class BluefruitSPI:
         if timeout <= 0:
             if self._debug:
                 print("ERROR: Timed out waiting for a response.")
-            raise Exception('Timed out waiting for a response.')
+            raise RuntimeError('Timed out waiting for a response.')
 
         # Retrieve the response message
         msgtype = 0

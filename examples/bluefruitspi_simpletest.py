@@ -1,10 +1,6 @@
 import busio
 import digitalio
 import board
-try:
-    from struct import pack_into, unpack
-except ImportError:
-    from ustruct import pack_into, unpack
 
 from adafruit_bluefruitspi import BluefruitSPI, MsgType
 
@@ -16,13 +12,11 @@ bluefruit = BluefruitSPI(spi_bus, cs, irq, debug=True)
 # Send the ATI command
 try:
     msgtype, msgid, rsp = bluefruit.cmd("ATI\n")
-except Exception as error:
+    if msgtype == MsgType.ERROR:
+        print("Error (id:{0})".format(hex(msgid)))
+    if msgtype == MsgType.RESPONSE:
+        print("Response:")
+        print(rsp)
+except RuntimeError as error:
     print("AT command failure: " + repr(error))
     exit()
-
-# Parse response packet
-if msgtype == MsgType.ERROR:
-    print("Error (id:{0})".format(hex(msgid)))
-if msgtype == MsgType.RESPONSE:
-    print("Response:")
-    print(rsp)
