@@ -10,39 +10,20 @@ irq = DigitalInOut(board.D7)
 rst = DigitalInOut(board.D4)
 bluefruit = BluefruitSPI(spi_bus, cs, irq, rst, debug=False)
 
-def send_command(string):
-    try:
-        msgtype, msgid, rsp = bluefruit.cmd(string+"\n")
-        if msgtype == MsgType.ERROR:
-            raise RuntimeError("Error (id:{0})".format(hex(msgid)))
-        if msgtype == MsgType.RESPONSE:
-            return rsp
-    except RuntimeError as error:
-        raise RuntimeError("AT command failure: " + repr(error))
-
-def command_check_OK(string, delay=0.0):
-    ret = send_command(string)
-    time.sleep(delay)
-    if not ret or not ret[-4:]:
-        raise RuntimeError("Not OK")
-    if ret[-4:] != b'OK\r\n':
-        raise RuntimeError("Not OK")
-    if ret[:-4]:
-        return str(ret[:-4], 'utf-8')
-
-# Initialize the device
+# Initialize the device and perform a factory reset
+print("Initializing the Bluefruit LE SPI Friend module")
 bluefruit.init()
-print(command_check_OK("AT+FACTORYRESET", 1.0))
-print(command_check_OK("ATI"))
-#print(command_check_OK("AT+GAPDEVNAME=ColorLamp"))
+bluefruit.command_check_OK("AT+FACTORYRESET", 1.0)
+print(bluefruit.command_check_OK("ATI"))
+print(bluefruit.command_check_OK("AT+GAPDEVNAME=ColorLamp"))
 
 while True:
-    # our main loop, if not connected, wait till we are
     connected = False
     dotcount = 0
     print("Waiting for a connection to Bluefruit LE Connect ...")
+    # Wait for a connection ...
     while not connected:
-        connected = int(command_check_OK("AT+GAPGETCONN")) == 1
+        connected = int(bluefruit.command_check_OK("AT+GAPGETCONN")) == 1
         dotcount += 1
         if dotcount == 79:
             print(".")
@@ -50,13 +31,13 @@ while True:
         else:
             print(".", end="")
         time.sleep(0.5)
-    # Yay!
+    # Once connected, check for incoming BLE UART data
     print("\nConnected!")
     while connected:
-        command_check_OK("AT+BLEUARTTX=*")
-        resp = command_check_OK("AT+BLEUARTRX")
+        #bluefruit.command_check_OK("AT+BLEUARTTX=0123456789")
+        resp = bluefruit.command_check_OK("AT+BLEUARTRX")
         if resp:
             print(resp)
-        # Check connection status with a 1s delay
-        connected = int(command_check_OK("AT+GAPGETCONN", 0.5)) == 1
+        # Check connection status followed by a 500ms delay
+        connected = int(bluefruit.command_check_OK("AT+GAPGETCONN", 0.5)) == 1
     print("Connection lost.")

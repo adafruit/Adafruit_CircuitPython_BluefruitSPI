@@ -146,7 +146,7 @@ class BluefruitSPI:
         self._spi_device = SPIDevice(spi, cs,
                                      baudrate=4000000, phase=0, polarity=0)
 
-    def cmd(self, cmd):
+    def _cmd(self, cmd):
         """
         Executes the supplied AT command, which must be terminated with
         a new-line character.
@@ -154,23 +154,34 @@ class BluefruitSPI:
         bytearray.
         :param cmd: The new-line terminated AT command to execute.
         """
-        # Make sure we stay within the 20 byte limit
-        if len(cmd) > 16:
-            # TODO: Split command into multiple packets
+        # Make sure we stay within the 255 byte limit
+        if len(cmd) > 127:
             if self._debug:
                 print("ERROR: Command too long.")
             raise ValueError('Command too long.')
 
-        # Construct the SDEP packet
-        struct.pack_into("<BHB16s", self._buf_tx, 0,
-                         MsgType.COMMAND, SDEPCommand.ATCOMMAND,
-                         len(cmd), cmd)
-        if self._debug:
-            print("Writing: ", [hex(b) for b in self._buf_tx])
+        more = 0x80 # More bit is in pos 8, 1 = more data available
+        pos = 0
+        while len(cmd) - pos:
+            # Construct the SDEP packet
+            if len(cmd) - pos <= 16:
+                # Last or sole packet
+                more = 0
+            plen = len(cmd) - pos
+            if plen > 16:
+                plen = 16
+            # Note the 'more' value in bit 8 of the packet len
+            struct.pack_into("<BHB16s", self._buf_tx, 0,
+                             MsgType.COMMAND, SDEPCommand.ATCOMMAND,
+                             plen | more, cmd[pos:pos+plen])
+            if self._debug:
+                print("Writing: ", [hex(b) for b in self._buf_tx])
+            # Update the position if there is data remaining
+            pos += plen
 
-        # Send out the SPI bus
-        with self._spi_device as spi:
-            spi.write(self._buf_tx, end=len(cmd) + 4)
+            # Send out the SPI bus
+            with self._spi_device as spi:
+                spi.write(self._buf_tx, end=len(cmd) + 4)
 
         # Wait up to 200ms for a response
         timeout = 0.2
@@ -231,10 +242,30 @@ class BluefruitSPI:
         Sends the specific string out over BLE UART.
         :param txt: The new-line terminated string to send.
         """
-        return self.cmd("AT+BLEUARTTX="+txt+"\n")
+        return self._cmd("AT+BLEUARTTX="+txt+"\n")
 
     def uartrx(self):
         """
         Reads data from the BLE UART FIFO.
         """
-        return self.cmd("AT+BLEUARTRX\n")
+        return self._cmd("AT+BLEUARTRX\n")
+
+    def command(self, string):
+        try:
+            msgtype, msgid, rsp = self._cmd(string+"\n")
+            if msgtype == MsgType.ERROR:
+                raise RuntimeError("Error (id:{0})".format(hex(msgid)))
+            if msgtype == MsgType.RESPONSE:
+                return rsp
+        except RuntimeError as error:
+            raise RuntimeError("AT command failure: " + repr(error))
+
+    def command_check_OK(self, string, delay=0.0):
+        ret = self.command(string)
+        time.sleep(delay)
+        if not ret or not ret[-4:]:
+            raise RuntimeError("Not OK")
+        if ret[-4:] != b'OK\r\n':
+            raise RuntimeError("Not OK")
+        if ret[:-4]:
+            return str(ret[:-4], 'utf-8')
