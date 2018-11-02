@@ -15,7 +15,7 @@ print("Initializing the Bluefruit LE SPI Friend module")
 bluefruit.init()
 bluefruit.command_check_OK("AT+FACTORYRESET", 1.0)
 print(bluefruit.command_check_OK("ATI"))
-print(bluefruit.command_check_OK("AT+GAPDEVNAME=ColorLamp"))
+bluefruit.command_check_OK("AT+GAPDEVNAME=ColorLamp")
 
 while True:
     connected = False
