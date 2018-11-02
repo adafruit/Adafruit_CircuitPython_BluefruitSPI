@@ -20,8 +20,9 @@ def send_command(string):
     except RuntimeError as error:
         raise RuntimeError("AT command failure: " + repr(error))
 
-def command_check_OK(string):
+def command_check_OK(string, delay=0.0):
     ret = send_command(string)
+    time.sleep(delay)
     if not ret or not ret[-4:]:
         raise RuntimeError("Not OK")
     if ret[-4:] != b'OK\r\n':
@@ -29,37 +30,9 @@ def command_check_OK(string):
     if ret[:-4]:
         return str(ret[:-4], 'utf-8')
 
-def uarttx(string):
-    try:
-        msgtype, msgid, rsp = bluefruit.uarttx(string)
-        if msgtype == MsgType.ERROR:
-            raise RuntimeError("Error (id:{0})".format(hex(msgid)))
-    except RuntimeError as error:
-        raise RuntimeError("UARTTX command failure: " + repr(error))
-    if not rsp or not rsp[-4:]:
-        raise RuntimeError("Not OK")
-    if rsp[-4:] != b'OK\r\n':
-        raise RuntimeError("Not OK")
-    if rsp[:-4]:
-        return str(ret[:-4], 'utf-8')
-
-def uartrx():
-    try:
-        msgtype, msgid, rsp = bluefruit.uartrx()
-        if msgtype == MsgType.ERROR:
-            raise RuntimeError("Error (id:{0})".format(hex(msgid)))
-    except RuntimeError as error:
-        raise RuntimeError("UARTRX command failure: " + repr(error))
-    if not rsp or not rsp[-4:]:
-        raise RuntimeError("Not OK")
-    if rsp[-4:] != b'OK\r\n':
-        raise RuntimeError("Not OK")
-    if rsp[:-4]:
-        return str(ret[:-4], 'utf-8')
-
-# Send the ATI command
-print(command_check_OK("AT+FACTORYRESET"))
-time.sleep(1)
+# Initialize the device
+bluefruit.init()
+print(command_check_OK("AT+FACTORYRESET", 1.0))
 print(command_check_OK("ATI"))
 #print(command_check_OK("AT+GAPDEVNAME=ColorLamp"))
 
@@ -80,6 +53,10 @@ while True:
     # Yay!
     print("\nConnected!")
     while connected:
-        uarttx("1")
-        connected = int(command_check_OK("AT+GAPGETCONN")) == 1
+        command_check_OK("AT+BLEUARTTX=*")
+        resp = command_check_OK("AT+BLEUARTRX")
+        if resp:
+            print(resp)
+        # Check connection status with a 1s delay
+        connected = int(command_check_OK("AT+GAPGETCONN", 0.5)) == 1
     print("Connection lost.")

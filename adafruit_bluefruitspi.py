@@ -143,7 +143,8 @@ class BluefruitSPI:
         self._irq.direction = Direction.INPUT
         self._irq.pull = Pull.DOWN
 
-        self._spi_device = SPIDevice(spi, cs)
+        self._spi_device = SPIDevice(spi, cs,
+                                     baudrate=4000000, phase=0, polarity=0)
 
     def cmd(self, cmd):
         """
@@ -206,6 +207,24 @@ class BluefruitSPI:
             print(rsp)
 
         return msgtype, rspid, rsp
+
+    def init(self):
+        """
+        Sends the SDEP initialize command, which causes the board to reset.
+        This command should complete in under 1s.
+        """
+        # Construct the SDEP packet
+        struct.pack_into("<BHB", self._buf_tx, 0,
+                         MsgType.COMMAND, SDEPCommand.INITIALIZE, 0)
+        if self._debug:
+            print("Writing: ", [hex(b) for b in self._buf_tx])
+
+        # Send out the SPI bus
+        with self._spi_device as spi:
+            spi.write(self._buf_tx, end=4)
+
+        # Wait 1 second for the command to complete.
+        time.sleep(1)
 
     def uarttx(self, txt):
         """
