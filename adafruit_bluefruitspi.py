@@ -48,13 +48,10 @@ __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BluefruitSPI.git"
 
 import time
-import digitalio
+from digitalio import Direction, Pull
 from adafruit_bus_device.spi_device import SPIDevice
 from micropython import const
-try:
-    from struct import pack_into, unpack
-except ImportError:
-    from ustruct import pack_into, unpack
+import struct
 
 
 class MsgType:  #pylint: disable=too-few-public-methods,bad-whitespace
@@ -125,30 +122,28 @@ class ErrorCode:  #pylint: disable=too-few-public-methods,bad-whitespace
 class BluefruitSPI:
     """Helper for the Bluefruit LE SPI Friend"""
 
-    def __init__(self, spi, cs, irq, debug=False):
-        self._cs = cs
+    def __init__(self, spi, cs, irq, reset, debug=False):
         self._irq = irq
-        self._spi = spi
-        self._ble = SPIDevice(self._spi, self._cs)
         self._buf_tx = bytearray(20)
         self._buf_rx = bytearray(20)
         self._debug = debug
 
-        # CS is an active low output, so set pullup
-        self._cs.switch_to_output(value=True,
-                                  drive_mode=digitalio.DriveMode.PUSH_PULL)
+        # Reset
+        reset.direction = Direction.OUTPUT
+        reset.value = False
+        time.sleep(0.01)
+        reset.value = True
+        time.sleep(0.5)
+
+        # CS is an active low output
+        cs.direction = Direction.OUTPUT
+        cs.value = True
 
         # irq line is active high input, so set a pulldown as a precaution
-        self._irq.switch_to_input(pull=digitalio.Pull.DOWN)
+        self._irq.direction = Direction.INPUT
+        self._irq.pull = Pull.DOWN
 
-        # Check out the SPI bus
-        while not self._spi.try_lock():
-            pass
-
-        # Configure SPI for 4MHz
-        self._spi.configure(baudrate=4000000, phase=0, polarity=0)
-
-        self._spi.unlock()
+        self._spi_device = SPIDevice(spi, cs)
 
     def cmd(self, cmd):
         """
@@ -165,25 +160,22 @@ class BluefruitSPI:
                 print("ERROR: Command too long.")
             raise ValueError('Command too long.')
 
-        # Check out the SPI bus
-        while not self._spi.try_lock():
-            pass
-
-        # Send the packet across the SPI bus
-        pack_into("<BHB16s", self._buf_tx, 0,
-                  MsgType.COMMAND, SDEPCommand.ATCOMMAND,
-                  len(cmd), cmd)
+        # Construct the SDEP packet
+        struct.pack_into("<BHB16s", self._buf_tx, 0,
+                         MsgType.COMMAND, SDEPCommand.ATCOMMAND,
+                         len(cmd), cmd)
         if self._debug:
             print("Writing: ", [hex(b) for b in self._buf_tx])
-        self._cs.value = False
-        self._spi.write(self._buf_tx, end=len(cmd) + 4)
-        self._cs.value = True
+
+        # Send out the SPI bus
+        with self._spi_device as spi:
+            spi.write(self._buf_tx, end=len(cmd) + 4)
 
         # Wait up to 200ms for a response
         timeout = 0.2
-        while timeout > 0.0 and self._irq is False:
-            time.sleep(0.005)
-            timeout -= 0.005
+        while timeout > 0 and not self._irq.value:
+            time.sleep(0.01)
+            timeout -= 0.01
         if timeout <= 0:
             if self._debug:
                 print("ERROR: Timed out waiting for a response.")
@@ -197,12 +189,11 @@ class BluefruitSPI:
         while self._irq.value is True:
             # Read the current response packet
             time.sleep(0.01)
-            self._cs.value = False
-            self._spi.readinto(self._buf_rx)
-            self._cs.value = True
+            with self._spi_device as spi:
+                spi.readinto(self._buf_rx)
 
             # Read the message envelope and contents
-            msgtype, rspid, rsplen = unpack('>BHB', self._buf_rx)
+            msgtype, rspid, rsplen = struct.unpack('>BHB', self._buf_rx)
             if rsplen >= 16:
                 rsp += self._buf_rx[4:20]
             else:
@@ -210,11 +201,21 @@ class BluefruitSPI:
             if self._debug:
                 print("Reading: ", [hex(b) for b in self._buf_rx])
 
-        # Release the SPI bus
-        self._spi.unlock()
-
         # Clean up the response buffer
         if self._debug:
             print(rsp)
 
         return msgtype, rspid, rsp
+
+    def uarttx(self, txt):
+        """
+        Sends the specific string out over BLE UART.
+        :param txt: The new-line terminated string to send.
+        """
+        return self.cmd("AT+BLEUARTTX="+txt+"\n")
+
+    def uartrx(self):
+        """
+        Reads data from the BLE UART FIFO.
+        """
+        return self.cmd("AT+BLEUARTRX\n")
