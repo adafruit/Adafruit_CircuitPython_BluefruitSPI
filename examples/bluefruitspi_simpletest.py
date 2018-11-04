@@ -1,10 +1,10 @@
 # A simple echo test for the Feather M0 Bluefruit
-# Sets the name, then 
+# Sets the name, then echo's all RX'd data with a reversed packet
 
-import busio
-from digitalio import DigitalInOut, Direction
-import board
 import time
+import busio
+import board
+from digitalio import DigitalInOut
 from adafruit_bluefruitspi import BluefruitSPI
 
 spi_bus = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
@@ -57,5 +57,5 @@ while True:
             send.append(resp[i-1])
         print(bytes(send))
         bluefruit.uart_tx(bytes(send))
-        
+
     print("Connection lost.")
