@@ -44,10 +44,12 @@ def wait_for_connection():
 # This code will check the connection but only query the module if it has been
 # at least 'n_sec' seconds. Otherwise it 'caches' the response, to keep from
 # hogging the Bluefruit connection with constant queries
-connect_check_timestamp = None
+connection_timestamp = None
 is_connected = None
 def check_connection(n_sec):
-    if (not connect_check_timestamp) or (time.monotonic() - connection_timestamp > n_sec):
+    # pylint: disable=global-statement
+    global connection_timestamp, is_connected
+    if (not connection_timestamp) or (time.monotonic() - connection_timestamp > n_sec):
         connection_timestamp = time.monotonic()
         is_connected = bluefruit.connected
     return is_connected
