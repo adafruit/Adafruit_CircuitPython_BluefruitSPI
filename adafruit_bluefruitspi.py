@@ -155,7 +155,7 @@ class BluefruitSPI:
 
             # Send out the SPI bus
             with self._spi_device as spi:
-                spi.write(self._buf_tx, end=len(cmd) + 4)
+                spi.write(self._buf_tx, end=len(cmd) + 4) # pylint: disable=no-member
 
         # Wait up to 200ms for a response
         timeout = 0.2
@@ -207,7 +207,7 @@ class BluefruitSPI:
 
         # Send out the SPI bus
         with self._spi_device as spi:
-            spi.write(self._buf_tx, end=4)
+            spi.write(self._buf_tx, end=4) # pylint: disable=no-member
 
         # Wait 1 second for the command to complete.
         time.sleep(1)
