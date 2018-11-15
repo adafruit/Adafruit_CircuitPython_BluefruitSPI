@@ -26,7 +26,7 @@ Table of Contents
 .. toctree::
     :caption: Related Products
 
-    Bluefruit LE SPI Friend <https://www.adafruit.com/product/2633)
+    Bluefruit LE SPI Friend <https://www.adafruit.com/product/2633>
 
 .. toctree::
     :caption: Other Links
