@@ -179,7 +179,7 @@ class BluefruitSPI:
                 spi.readinto(self._buf_rx)
 
             # Read the message envelope and contents
-            msgtype, rspid, rsplen = struct.unpack('>BHB', self._buf_rx)
+            msgtype, rspid, rsplen = struct.unpack('>BHB', self._buf_rx[0:4])
             if rsplen >= 16:
                 rsp += self._buf_rx[4:20]
             else:
@@ -242,8 +242,7 @@ class BluefruitSPI:
                 raise RuntimeError("Error (id:{0})".format(hex(msgid)))
             if msgtype == _MSG_RESPONSE:
                 return rsp
-            else:
-                raise RuntimeError("Unknown response (id:{0})".format(hex(msgid)))
+            raise RuntimeError("Unknown response (id:{0})".format(hex(msgid)))
         except RuntimeError as error:
             raise RuntimeError("AT command failure: " + repr(error))
 
