@@ -16,13 +16,13 @@ bluefruit = BluefruitSPI(spi_bus, cs, irq, rst, debug=False)
 # Initialize the device and perform a factory reset
 print("Initializing the Bluefruit LE SPI Friend module")
 bluefruit.init()
-bluefruit.command_check_OK(b'AT+FACTORYRESET', delay=1)
+bluefruit.command_check_OK(b"AT+FACTORYRESET", delay=1)
 
 # Print the response to 'ATI' (info request) as a string
-print(str(bluefruit.command_check_OK(b'ATI'), 'utf-8'))
+print(str(bluefruit.command_check_OK(b"ATI"), "utf-8"))
 
 # Change advertised name
-bluefruit.command_check_OK(b'AT+GAPDEVNAME=BlinkaBLE')
+bluefruit.command_check_OK(b"AT+GAPDEVNAME=BlinkaBLE")
 
 while True:
     print("Waiting for a connection to Bluefruit LE Connect ...")
@@ -54,7 +54,7 @@ while True:
         print("Writing reverse...")
         send = []
         for i in range(len(resp), 0, -1):
-            send.append(resp[i-1])
+            send.append(resp[i - 1])
         print(bytes(send))
         bluefruit.uart_tx(bytes(send))
 
