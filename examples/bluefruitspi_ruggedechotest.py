@@ -9,7 +9,7 @@ import board
 from digitalio import DigitalInOut
 from adafruit_bluefruitspi import BluefruitSPI
 
-ADVERT_NAME = b'BlinkaBLE'
+ADVERT_NAME = b"BlinkaBLE"
 
 spi_bus = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 cs = DigitalInOut(board.D8)
@@ -17,15 +17,17 @@ irq = DigitalInOut(board.D7)
 rst = DigitalInOut(board.D4)
 bluefruit = BluefruitSPI(spi_bus, cs, irq, rst, debug=False)
 
+
 def init_bluefruit():
     # Initialize the device and perform a factory reset
     print("Initializing the Bluefruit LE SPI Friend module")
     bluefruit.init()
-    bluefruit.command_check_OK(b'AT+FACTORYRESET', delay=1)
+    bluefruit.command_check_OK(b"AT+FACTORYRESET", delay=1)
     # Print the response to 'ATI' (info request) as a string
-    print(str(bluefruit.command_check_OK(b'ATI'), 'utf-8'))
+    print(str(bluefruit.command_check_OK(b"ATI"), "utf-8"))
     # Change advertised name
-    bluefruit.command_check_OK(b'AT+GAPDEVNAME='+ADVERT_NAME)
+    bluefruit.command_check_OK(b"AT+GAPDEVNAME=" + ADVERT_NAME)
+
 
 def wait_for_connection():
     print("Waiting for a connection to Bluefruit LE Connect ...")
@@ -38,11 +40,14 @@ def wait_for_connection():
             print("")
         time.sleep(0.5)
 
+
 # This code will check the connection but only query the module if it has been
 # at least 'n_sec' seconds. Otherwise it 'caches' the response, to keep from
 # hogging the Bluefruit connection with constant queries
 connection_timestamp = None
 is_connected = None
+
+
 def check_connection(n_sec):
     # pylint: disable=global-statement
     global connection_timestamp, is_connected
@@ -51,13 +56,14 @@ def check_connection(n_sec):
         is_connected = bluefruit.connected
     return is_connected
 
+
 # Unlike most circuitpython code, this runs in two loops
 # one outer loop manages reconnecting bluetooth if we lose connection
 # then one inner loop for doing what we want when connected!
 while True:
     # Initialize the module
-    try:        # Wireless connections can have corrupt data or other runtime failures
-                # This try block will reset the module if that happens
+    try:  # Wireless connections can have corrupt data or other runtime failures
+        # This try block will reset the module if that happens
         init_bluefruit()
         wait_for_connection()
         print("\n *Connected!*")
@@ -73,7 +79,7 @@ while True:
             print("Writing reverse...")
             send = []
             for i in range(len(resp), 0, -1):
-                send.append(resp[i-1])
+                send.append(resp[i - 1])
             print(bytes(send))
             bluefruit.uart_tx(bytes(send))
         print("Connection lost.")
