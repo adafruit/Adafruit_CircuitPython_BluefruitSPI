@@ -51,7 +51,6 @@ from digitalio import Direction, Pull
 from adafruit_bus_device.spi_device import SPIDevice
 from micropython import const
 
-# pylint: disable=bad-whitespace
 _MSG_COMMAND = const(0x10)  # Command message
 _MSG_RESPONSE = const(0x20)  # Response message
 _MSG_ALERT = const(0x40)  # Alert message
@@ -84,7 +83,6 @@ _ERROR_UNSUPPORTED = const(0x8063)  # AT: Unsupported command
 _PACKET_BUTTON_LEN = const(5)
 _PACKET_COLOR_LEN = const(6)
 
-# pylint: enable=bad-whitespace
 
 
 class BluefruitSPI:
