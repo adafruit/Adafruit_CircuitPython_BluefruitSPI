@@ -84,7 +84,6 @@ _PACKET_BUTTON_LEN = const(5)
 _PACKET_COLOR_LEN = const(6)
 
 
-
 class BluefruitSPI:
     """Helper for the Bluefruit LE SPI Friend"""
 
