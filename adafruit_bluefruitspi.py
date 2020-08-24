@@ -247,7 +247,7 @@ class BluefruitSPI:
                 return rsp
             raise RuntimeError("Unknown response (id:{0})".format(hex(msgid)))
         except RuntimeError as error:
-            raise RuntimeError("AT command failure: " + repr(error))
+            raise RuntimeError("AT command failure: " + repr(error)) from error
 
     def command_check_OK(self, command, delay=0.0):  # pylint: disable=invalid-name
         """Send a fully formed bytestring AT command, and check
