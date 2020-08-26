@@ -51,7 +51,6 @@ from digitalio import Direction, Pull
 from adafruit_bus_device.spi_device import SPIDevice
 from micropython import const
 
-# pylint: disable=bad-whitespace
 _MSG_COMMAND = const(0x10)  # Command message
 _MSG_RESPONSE = const(0x20)  # Response message
 _MSG_ALERT = const(0x40)  # Alert message
@@ -83,8 +82,6 @@ _ERROR_UNSUPPORTED = const(0x8063)  # AT: Unsupported command
 # For the Bluefruit Connect packets
 _PACKET_BUTTON_LEN = const(5)
 _PACKET_COLOR_LEN = const(6)
-
-# pylint: enable=bad-whitespace
 
 
 class BluefruitSPI:
@@ -250,7 +247,7 @@ class BluefruitSPI:
                 return rsp
             raise RuntimeError("Unknown response (id:{0})".format(hex(msgid)))
         except RuntimeError as error:
-            raise RuntimeError("AT command failure: " + repr(error))
+            raise RuntimeError("AT command failure: " + repr(error)) from error
 
     def command_check_OK(self, command, delay=0.0):  # pylint: disable=invalid-name
         """Send a fully formed bytestring AT command, and check

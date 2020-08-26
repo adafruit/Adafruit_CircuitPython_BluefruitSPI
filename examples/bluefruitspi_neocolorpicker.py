@@ -5,8 +5,8 @@ import time
 import busio
 import board
 from digitalio import DigitalInOut
-from adafruit_bluefruitspi import BluefruitSPI
 import neopixel
+from adafruit_bluefruitspi import BluefruitSPI
 
 ADVERT_NAME = b"BlinkaNeoLamp"
 
