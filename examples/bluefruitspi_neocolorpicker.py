@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 # NeoPixel Color Picker demo - wire up some NeoPixels and set their color
 # using Adafruit Bluefruit Connect App on your phone
 
