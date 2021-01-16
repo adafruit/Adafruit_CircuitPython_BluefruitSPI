@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 # A more 'rugged' echo test for the Feather M0 Bluefruit
 # Sets the name, then echo's all RX'd data with a reversed packet
 # we wrap the loop in a try/except block and have multiple loops
