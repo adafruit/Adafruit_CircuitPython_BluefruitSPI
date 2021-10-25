@@ -118,6 +118,11 @@ Usage Example
 
         print("Connection lost.")
 
+Documentation
+=============
+
+API documentation for this library can be found on `Read the Docs <https://circuitpython.readthedocs.io/projects/bluefruitspi/en/latest/>`_.
+
 Contributing
 ============
 
