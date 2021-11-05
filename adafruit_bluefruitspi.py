@@ -120,8 +120,7 @@ class BluefruitSPI:
                 # Last or sole packet
                 more = 0
             plen = len(cmd) - pos
-            if plen > 16:
-                plen = 16
+            plen = min(plen, 16)
             # Note the 'more' value in bit 8 of the packet len
             struct.pack_into(
                 "<BHB16s",
