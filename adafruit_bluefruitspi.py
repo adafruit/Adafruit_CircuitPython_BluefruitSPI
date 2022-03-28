@@ -162,6 +162,7 @@ class BluefruitSPI:
         """
         Put an AT+BLEKEYBOARDCODE command into the FIFO buffer.
         Call pop_keyboard_code() to send a single packet to the Bluefruit.
+
         :param evt: bytearray(8) representing keyboard code to send
         """
         evt = ba.hexlify(evt)
@@ -188,6 +189,7 @@ class BluefruitSPI:
     def _create_sdep_raw(dest, payload, more):
         """
         Create an SDEP packet
+
         :param dest: bytearray(20) to place SDEP packet in
         :param payload: iterable with length <= 16 containing the payload data
         :param more: True to set the more bit, False otherwise
@@ -210,6 +212,7 @@ class BluefruitSPI:
         a new-line character.
         Returns msgtype, rspid, rsp, which are 8-bit int, 16-bit int and a
         bytearray.
+
         :param cmd: The new-line terminated AT command to execute.
         """
         # Make sure we stay within the 255 byte limit
@@ -302,6 +305,7 @@ class BluefruitSPI:
     def uart_tx(self, data):
         """
         Sends the specific bytestring out over BLE UART.
+
         :param data: The bytestring to send.
         """
         return self._cmd(b"AT+BLEUARTTX=" + data + b"\r\n")
