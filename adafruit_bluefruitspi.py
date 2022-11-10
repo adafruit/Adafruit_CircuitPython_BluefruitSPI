@@ -111,7 +111,13 @@ class BluefruitSPI:
     """Helper for the Bluefruit LE SPI Friend"""
 
     def __init__(
-        self, spi, cs, irq, reset, debug=False, fifo_len=20
+        self,
+        spi,
+        cs,  # pylint: disable=invalid-name
+        irq,
+        reset,
+        debug=False,
+        fifo_len=20,
     ):  # pylint: disable=too-many-arguments
         self._irq = irq
         self._buf_tx = bytearray(20)
@@ -376,7 +382,7 @@ class BluefruitSPI:
         packet = self._buffer[0:plen]
 
         self._buffer = self._buffer[plen:]  # remove packet from buffer
-        if sum([ord(x) for x in packet]) % 256 != 255:  # check sum
+        if sum(ord(x) for x in packet) % 256 != 255:  # check sum
             return None
 
         # OK packet's good!
