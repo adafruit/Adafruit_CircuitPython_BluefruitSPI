@@ -73,6 +73,7 @@ _PACKET_COLOR_LEN = const(6)
 
 _KEY_CODE_CMD = "AT+BLEKEYBOARDCODE=00-00-00-00-00-00-00-00\n"
 
+
 # TODO: replace with collections.deque in CircuitPython 7
 class FIFOBuffer:
     """FIFO buffer vaguely based on collections.deque.
