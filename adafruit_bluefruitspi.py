@@ -28,15 +28,15 @@ Implementation Notes
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BluefruitSPI.git"
 
-import time
 import struct
+import time
 
 try:
     import binascii as ba
 except ImportError:
     import adafruit_binascii as ba
-from digitalio import Direction, Pull
 from adafruit_bus_device.spi_device import SPIDevice
+from digitalio import Direction, Pull
 from micropython import const
 
 _MSG_COMMAND = const(0x10)  # Command message
@@ -114,12 +114,12 @@ class BluefruitSPI:
     def __init__(
         self,
         spi,
-        cs,  # pylint: disable=invalid-name
+        cs,
         irq,
         reset,
         debug=False,
         fifo_len=20,
-    ):  # pylint: disable=too-many-arguments
+    ):
         self._irq = irq
         self._buf_tx = bytearray(20)
         self._buf_rx = bytearray(20)
@@ -156,13 +156,19 @@ class BluefruitSPI:
     def _init_keycode_template(self):
         """Prebuild SDEP packets for AT+BLEKEYBOARDCODE command"""
         self._create_sdep_raw(
-            self._keycode_template[0], _KEY_CODE_CMD[:16], True  # AT+BLEKEYBOARDCO
+            self._keycode_template[0],
+            _KEY_CODE_CMD[:16],
+            True,  # AT+BLEKEYBOARDCO
         )
         self._create_sdep_raw(
-            self._keycode_template[1], _KEY_CODE_CMD[16:32], True  #  DE=00-00-00-00-0
+            self._keycode_template[1],
+            _KEY_CODE_CMD[16:32],
+            True,  #  DE=00-00-00-00-0
         )
         self._create_sdep_raw(
-            self._keycode_template[2], _KEY_CODE_CMD[32:48], False  #  0-00-00-00\n
+            self._keycode_template[2],
+            _KEY_CODE_CMD[32:48],
+            False,  #  0-00-00-00\n
         )
 
     def send_keyboard_code(self, evt):
@@ -213,7 +219,7 @@ class BluefruitSPI:
             payload,
         )
 
-    def _cmd(self, cmd):  # pylint: disable=too-many-branches
+    def _cmd(self, cmd):
         """
         Executes the supplied AT command, which must be terminated with
         a new-line character.
@@ -248,7 +254,7 @@ class BluefruitSPI:
 
             # Send out the SPI bus
             with self._spi_device as spi:
-                spi.write(self._buf_tx, end=len(cmd) + 4)  # pylint: disable=no-member
+                spi.write(self._buf_tx, end=len(cmd) + 4)
 
         # Wait up to 200ms for a response
         timeout = 0.2
@@ -299,7 +305,7 @@ class BluefruitSPI:
 
         # Send out the SPI bus
         with self._spi_device as spi:
-            spi.write(self._buf_tx, end=4)  # pylint: disable=no-member
+            spi.write(self._buf_tx, end=4)
 
         # Wait 1 second for the command to complete.
         time.sleep(1)
@@ -332,14 +338,14 @@ class BluefruitSPI:
         try:
             msgtype, msgid, rsp = self._cmd(string + "\n")
             if msgtype == _MSG_ERROR:
-                raise RuntimeError("Error (id:{0})".format(hex(msgid)))
+                raise RuntimeError(f"Error (id:{hex(msgid)})")
             if msgtype == _MSG_RESPONSE:
                 return rsp
-            raise RuntimeError("Unknown response (id:{0})".format(hex(msgid)))
+            raise RuntimeError(f"Unknown response (id:{hex(msgid)})")
         except RuntimeError as error:
             raise RuntimeError("AT command failure: " + repr(error)) from error
 
-    def command_check_OK(self, command, delay=0.0):  # pylint: disable=invalid-name
+    def command_check_OK(self, command, delay=0.0):
         """Send a fully formed bytestring AT command, and check
         whether we got an 'OK' back. Returns payload bytes if there is any"""
         ret = self.command(command)
@@ -352,7 +358,7 @@ class BluefruitSPI:
             return ret[:-4]
         return None
 
-    def read_packet(self):  # pylint: disable=too-many-return-statements
+    def read_packet(self):
         """
         Will read a Bluefruit Connect packet and return it in a parsed format.
         Currently supports Button and Color packets only

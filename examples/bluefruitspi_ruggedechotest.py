@@ -7,9 +7,11 @@
 # and functions to keep our connection up and running no matter what
 
 import time
-import busio
+
 import board
+import busio
 from digitalio import DigitalInOut
+
 from adafruit_bluefruitspi import BluefruitSPI
 
 ADVERT_NAME = b"BlinkaBLE"
@@ -52,7 +54,6 @@ is_connected = None
 
 
 def check_connection(n_sec):
-    # pylint: disable=global-statement
     global connection_timestamp, is_connected
     if (not connection_timestamp) or (time.monotonic() - connection_timestamp > n_sec):
         connection_timestamp = time.monotonic()
