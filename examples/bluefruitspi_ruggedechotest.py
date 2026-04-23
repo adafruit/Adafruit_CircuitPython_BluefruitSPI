@@ -78,7 +78,7 @@ while True:
             resp = bluefruit.uart_rx()
             if not resp:
                 continue  # nothin'
-            print("Read %d bytes: %s" % (len(resp), resp))
+            print(f"Read {len(resp)} bytes: {resp}")
             # Now write it!
             print("Writing reverse...")
             send = []
